@@ -59,18 +59,18 @@ module.exports = {
   entry:
     STATIC_WEBVIZ || WEBVIZ_DEV
       ? {
-          webvizCoreBundle: "./packages/webviz-core/src/index.js",
-        }
+        webvizCoreBundle: "./packages/webviz-core/src/index.js",
+      }
       : {
-          docs: "./docs/src/index.js",
-          webvizCoreBundle: "./packages/webviz-core/src/index.js",
-        },
+        docs: "./docs/src/index.js",
+        webvizCoreBundle: "./packages/webviz-core/src/index.js",
+      },
   output: {
     path: WEBVIZ_DEV
       ? path.resolve(`${__dirname}/dist`)
       : STATIC_WEBVIZ
-      ? path.resolve(`${__dirname}/__static_webviz__`)
-      : path.resolve(`${__dirname}/docs/public/dist`),
+        ? path.resolve(`${__dirname}/__static_webviz__`)
+        : path.resolve(`${__dirname}/docs/public/dist`),
     publicPath: STATIC_WEBVIZ || WEBVIZ_DEV ? "" : "/dist/",
     pathinfo: true,
     filename: "[name].js",
@@ -87,6 +87,11 @@ module.exports = {
       // The Buffer bundled by webpack copies data when doing Buffer.from(sharedArrayBuffer).
       // Force use of the version in webviz-core/node_modules.
       buffer$: path.resolve(`${__dirname}/packages/webviz-core/node_modules/buffer`),
+      // Ensure we only ever bundle a single React instance. Without this, different parts of the
+      // monorepo can resolve React from different node_modules locations, causing hooks like
+      // useEffect to crash at runtime ("Cannot read properties of null (reading 'useEffect')").
+      react$: path.resolve(`${__dirname}/node_modules/react`),
+      "react-dom$": path.resolve(`${__dirname}/node_modules/react-dom`),
     },
   },
   module: {
@@ -113,9 +118,19 @@ module.exports = {
         },
       },
       {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        use: { loader: "babel-loader?cacheDirectory" },
+        test: /\.[cm]?js$/,
+        exclude: /node_modules\/(?!(?:@blueprintjs|react-mosaic-component|react-resizable|react-draggable)\/)/,
+        use: {
+          loader: "babel-loader",
+          options: {
+            cacheDirectory: true,
+            presets: ["@babel/preset-env", "@babel/preset-react"],
+            plugins: [
+              "@babel/plugin-proposal-nullish-coalescing-operator",
+              "@babel/plugin-proposal-optional-chaining",
+            ],
+          },
+        },
       },
       {
         test: /\.mdx$/,

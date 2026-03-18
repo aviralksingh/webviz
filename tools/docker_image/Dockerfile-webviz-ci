@@ -1,11 +1,5 @@
-# Copyright (c) 2018-present, GM Cruise LLC
-#
-# This source code is licensed under the Apache License, Version 2.0,
-# found in the LICENSE file in the root directory of this source tree.
-# You may not use this file except in compliance with the License.
-
-# This is just for use in CI, as well as the base image for our proprietary version.
-# This container is published at https://hub.docker.com/r/cruise/webviz-ci.
+# Local copy of the CI/base Dockerfile.
+# Original lives at the repo root as Dockerfile-webviz-ci.
 
 FROM node:16.13.2-slim
 
@@ -42,3 +36,4 @@ ENV WEBVIZ_IN_DOCKER=true
 
 # Bumped up from the default old_space size (512mb) as it was being exceeded during builds.
 ENV NODE_OPTIONS="--max_old_space_size=4096"
+
